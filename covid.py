@@ -1,40 +1,34 @@
-import pandas as pd
-from scipy import stats
 import numpy as np
 import matplotlib.pyplot as plt
-import warnings
-warnings.filterwarnings("ignore")
+import matplotlib.animation as animation
 
-df=pd.read_csv("dati_covid.csv")
-x=df["giorno"]
-day=int(x[-1:].values)
-colors=["red", "green", "black", "yellow"]
-pred=[]
+fig, ax = plt.subplots()
 
-def regressor(x):
-    return slope*x+intercept
+x = np.arange(0, 2*np.pi, 0.01)
+line, = ax.plot(x, np.sin(x))
 
-for i in range(4):
-    y=df.iloc[:, i+2]
-    last=int(y[-1:].values)
-    model=np.poly1d(np.polyfit(x,y,3))
-    line=np.linspace(min(x), max(x))
-    
-    plt.figure(num="PREVISIONI COVID 14 APRILE 2020", figsize=(10,4))
-    plt.subplot(1,2,2)
-    plt.scatter(x,y, color=colors[i], alpha=0.5)
-    plt.plot(line, model(line), color=colors[i])
-    pred.append(model(day+1))
-    plt.axvline(day+1)
-    plt.scatter(day+1, pred[-1:], color="blue")
-    
-    result=int(pred[i]-last)
-    plt.subplot(12,2, 2*i+1)
-    plt.axis("off")
-    plt.text(0,0,f"{df.columns[i+2].capitalize()}: {int(pred[i])}")
-    if result>=0:
-        plt.text(0.4,0,f"[+{result}]")
-    else:
-        plt.text(0.4,0,f"[{result}]")
-    print(f"{df.columns[i+2].capitalize()} previsti il 14 aprile 2020:\t{int(pred[i])}")
+
+def init():  # only required for blitting to give a clean slate.
+    line.set_ydata([np.nan] * len(x))
+    return line,
+
+
+def animate(i):
+    line.set_ydata(np.sin(x + i / 100))  # update the data.
+    return line,
+
+
+ani = animation.FuncAnimation(
+    fig, animate, init_func=init, interval=2, blit=True, save_count=50)
+
+# To save the animation, use e.g.
+#
+# ani.save("movie.mp4")
+#
+# or
+#
+# writer = animation.FFMpegWriter(
+#     fps=15, metadata=dict(artist='Me'), bitrate=1800)
+# ani.save("movie.mp4", writer=writer)
+
 plt.show()
